@@ -22,5 +22,5 @@ run :: Term -> (Int, Int)
 run termer = runState (eval_s termer) 0
 
 test1 = run (Div (Con 6) (Con 3))
-test2 = run (Div (Div (Div (Con 6) (Con 3)) (Con 1)) (Con 1)) 
+test2 = run (Div (Div (Div (Con 120) (Con 3)) (Con 4)) (Con 2)) 
 test3 = run (Div (Div (Div (Con 6) (Con 3)) Count) Count) 
