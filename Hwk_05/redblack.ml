@@ -3,7 +3,9 @@ module type Set = sig
   type set
   val empty : set
   val insert : elem -> set -> set
-  val member : elem -> set -> bool  
+  val member : elem -> set -> bool
+
+  val fromOrdList : elem list -> set  
 end
 
 module type ORDERED =
@@ -14,7 +16,7 @@ sig
   val leq : t -> t-> bool	
 end
 
-module OrdInt : ORDERED = 
+module OrdInt : (ORDERED with type t = int) = 
 struct
    type t = int
    let eq (x:t) (y:t) = x == y
@@ -22,7 +24,7 @@ struct
    let leq (x:t) (y:t) = x <= y
 end
 
-module RedBlackSet (Element:ORDERED) : Set = 
+module RedBlackSet (Element:ORDERED) : (Set with type elem = Element.t) = 
 struct
 	type elem = Element.t
 
@@ -61,19 +63,25 @@ struct
 	let insert (x:elem) (s:set) = 
 		let rec ins (t:set) = match t with
 								| E -> T (R, E, x, E)
-								| T (color, a, y, b) as s -> if Element.lt x y then lbalance (T (color, ins a, y, b))
-														else if Element.lt y x then rbalance (T (color, a, y, ins b))
+								| T (color, a, y, b) as s -> if Element.lt x y then (* l *)balance (T (color, ins a, y, b))
+														else if Element.lt y x then (* r *)balance (T (color, a, y, ins b))
 														else s
 		in match ins s with
 		| T (_, a, y, b) -> T (B, a, y, b)
 
-	let rec looper (l:elem list) (t:set) = match l with
-											| [] -> t
-											| x::xs -> looper xs (insert x t)
+	let rec builder (l:elem list) = match l with
+											| [] -> E
+											| x::xs -> insert x (builder xs)
 
-	let fromOrdList (l:elem list) = looper l E
-
-
-
+	let fromOrdList (l:elem list) = builder l
 
 end
+
+module RB = RedBlackSet(OrdInt)
+
+let rec mkRBSet l = match l with
+				| [] -> RB.empty
+				| x::xs -> RB.insert x (mkRBSet xs)
+
+let tester1 = mkRBSet [5;4;3;2;9]
+let tester2 = RB.fromOrdList [7;5;1;3;4]
