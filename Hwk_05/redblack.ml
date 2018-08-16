@@ -3,8 +3,8 @@ module type Set = sig
   type set
   val empty : set
   val insert : elem -> set -> set
-  val member : elem -> set -> bool
-
+  val member : elem -> set -> bool (* * bool * elem list *)
+(* false if blackk,,  true is red *)
   val fromOrdList : elem list -> set  
 end
 
@@ -36,9 +36,21 @@ struct
 
 	let rec member (x:elem) (t:set) = match t with
 										| E -> false
-										| T (_, a, y, b) -> if Element.lt x y then member x a
+										| T (c, a, y, b) -> if Element.lt x y then member x a
 														else if Element.lt y x then member x b
 														else true
+
+	(* let rec member2 (x:elem) (t:set) (l:elem list) = match t with
+													| E -> (false, false, [])
+													| T (c, a, y, b) -> if Element.lt x y then member2 x a (y::l)
+																		else if Element.lt y x then member2 x b (y::l)
+																		(* else true *)
+																		else match c with
+																		| B -> (true, false, l)
+																		| R -> (true, true, l)
+
+	let member x t = member2 x t [] *)
+
 
 	let balance (t:tree) = match t with
 							| T (B, T (R, T (R, a, x, b), y, c), z, d) -> T (R, T (B, a, x, b), y, T (B, c, z, d))
@@ -63,17 +75,15 @@ struct
 	let insert (x:elem) (s:set) = 
 		let rec ins (t:set) = match t with
 								| E -> T (R, E, x, E)
-								| T (color, a, y, b) as s -> if Element.lt x y then (* l *)balance (T (color, ins a, y, b))
-														else if Element.lt y x then (* r *)balance (T (color, a, y, ins b))
+								| T (color, a, y, b) as s -> if Element.lt x y then lbalance (T (color, ins a, y, b))
+														else if Element.lt y x then rbalance (T (color, a, y, ins b))
 														else s
 		in match ins s with
 		| T (_, a, y, b) -> T (B, a, y, b)
 
-	let rec builder (l:elem list) = match l with
+	let rec fromOrdList (l:elem list) = match l with
 											| [] -> E
-											| x::xs -> insert x (builder xs)
-
-	let fromOrdList (l:elem list) = builder l
+											| x::xs -> insert x (fromOrdList xs)
 
 end
 
@@ -83,5 +93,11 @@ let rec mkRBSet l = match l with
 				| [] -> RB.empty
 				| x::xs -> RB.insert x (mkRBSet xs)
 
-let tester1 = mkRBSet [5;4;3;2;9]
-let tester2 = RB.fromOrdList [7;5;1;3;4]
+let tester1 = RB.fromOrdList [1;2;3;4;5]
+let t1 = RB.member 1 tester1
+let t2 = RB.member 2 tester1
+let t3 = RB.member 3 tester1
+let t4 = RB.member 4 tester1
+let t5 = RB.member 5 tester1
+let t6 = RB.member 6 tester1
+let t7 = RB.member 7 tester1

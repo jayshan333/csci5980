@@ -38,6 +38,9 @@ struct
 	type elem = Element.t
 	type heap = E | T of int * Elem.t * heap * heap
 
+	exception EMPTY
+
+
 	let rank (h:heap) = match h with
 						| E -> 0
 						| T (x,_,_,_) -> x
@@ -59,11 +62,11 @@ struct
 									| E -> T (1, x, E, E) 
 	                       			| T(_, y, a, b) -> if Elem.leq x y then makeT x E h
 	                       											   else makeT y a (insert x b)
-	exception EMPTY
 
 	let findMin (h:heap) = match h with
 						   | E -> raise EMPTY
 	                       | T(_, x, a, b) -> x
+
 	let deleteMin (h:heap) = match h with
 						   | E -> raise EMPTY
 	                       | T(_, x, a, b) -> merge a b
