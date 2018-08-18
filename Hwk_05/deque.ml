@@ -20,6 +20,7 @@ struct
   type 'a queue = 'a list * 'a list
   exception EMPTY
   exception NOFIX
+  exception FIXFAILURE
 
   let empty = ([],[])
 
@@ -49,38 +50,70 @@ struct
   
   let fix (q:'a queue) : 'a queue = match q with
                                     |([],l) -> let middle = (count l)/2 
-                                                in match split l middle with
-                                                (xs,ys) -> (rev ys,xs)
+                                                in (match split l middle with
+                                                   | (xs,ys) -> (rev ys,xs))
                                     |(l,[]) -> let middle = (count l)/2
-                                                in match split l middle with
-                                                (xs,ys) -> (xs,rev ys)
-                                    | _ -> raise NOFIX
+                                                in (match split l middle with
+                                                   | (xs,ys) -> (xs,rev ys))
+                                    | _ -> q
 
   let cons (x:'a) (q:'a queue) = match q with
                                  | (xs,ys) -> (x::xs,ys)
   
-  let rec head (q:'a queue) = match q with 
-                              | (x::xs,_) -> x
-                              | ([],[]) -> raise EMPTY
-                              | ([], y::[]) -> y
-                              | ([], y::ys) -> head (fix q)
-                              | _ -> raise EMPTY
+  let head (q:'a queue) = match q with 
+                          | ([],[]) -> raise EMPTY
+                          | ([], y::[]) -> y
+                          | ([], ys) -> (match (fix q) with
+                                            | (x1::xs1,ys1) -> x1
+                                            | _ -> raise FIXFAILURE)
+                          | (x::xs,_) -> x
+
 
   let tail (q:'a queue) = match q with
+                          | ([],[]) -> raise EMPTY
+                          | ([],y::[]) -> ([],[])
+                          | ([],ys) -> (match (fix q) with
+                                        | (x1::xs1,ys1) -> (xs1,ys1)
+                                        | _ -> raise FIXFAILURE)
                           | (x::xs,ys) -> (xs,ys)
-                          | ([],ys) -> do i fix?
+
+                                      
 
   let snoc (q:'a queue) (x:'a) = match q with
                                  | (xs,ys) -> (xs,x::ys)
 
   let last (q:'a queue) = match q with
+                          | ([],[]) -> raise EMPTY
+                          | (x::[],[]) -> x
+                          | (xs,[]) -> (match (fix q) with
+                                        | (xs1,y1::ys1) -> y1
+                                        | _ -> raise FIXFAILURE)
                           | (_,y::ys) -> y
 
+
   let init (q:'a queue) = match q with
+                          | ([],[]) -> raise EMPTY
+                          | (x::[],[]) -> ([],[])
+                          | (xs,[]) -> (match (fix q) with
+                                        |(xs1,y1::ys1) -> (xs1,ys1)
+                                        | _ -> raise FIXFAILURE)
                           | (xs,y::ys) -> (xs,ys)
 end
 
 module DQ = DequeImp
 
-let t1 = DQ.cons 3 DQ.empty
-let t2 = DQ.cons false DQ.empty
+let tester1 = DQ.snoc DQ.empty 3 
+let tester2 = DQ.snoc (DQ.snoc (DQ.snoc (DQ.snoc DQ.empty 1) 3) 5) 7
+let tester3 = DQ.cons 2 (DQ.cons 4 (DQ.cons 6 (DQ.cons 8 DQ.empty)))
+
+let t1 = DQ.head (DQ.tail tester2) == 3
+let t2 = DQ.head (DQ.init tester2) == 1
+let t3 = DQ.head tester1 == 3
+let t4 = DQ.last tester1 == 3
+let t5 = DQ.is_empty (DQ.tail tester1)
+let t6 = DQ.head tester3 == 2
+let t7 = DQ.last tester3 == 8
+let t8 = DQ.head (DQ.init tester3) == 2
+let t8 = DQ.last (DQ.init tester3) == 6
+let t8 = DQ.last (DQ.init (DQ.init tester3))
+let t9 = DQ.last (DQ.tail (DQ.init tester3)) == 6
