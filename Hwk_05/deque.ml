@@ -42,7 +42,7 @@ struct
 
   let split (l:'a list) (number:int) : ('a list * 'a list) =
     let rec spliter (left:'a list) (number:int) (front:'a list) = if number = 0 then (rev front, left)
-                                                                  else match l with
+                                                                  else match left with
                                                                        | x::xs -> spliter xs (number-1) (x::front)
                                                                        | [] -> raise EMPTY
       
@@ -115,5 +115,13 @@ let t6 = DQ.head tester3 == 2
 let t7 = DQ.last tester3 == 8
 let t8 = DQ.head (DQ.init tester3) == 2
 let t8 = DQ.last (DQ.init tester3) == 6
-let t8 = DQ.last (DQ.init (DQ.init tester3))
+let t8 = DQ.head (DQ.tail tester3) == 4
+let t8 = DQ.last (DQ.tail tester3) == 8
+let t8 = DQ.last (DQ.init (DQ.init tester3)) == 4
 let t9 = DQ.last (DQ.tail (DQ.init tester3)) == 6
+let t10 = DQ.head (DQ.tail (DQ.tail tester3)) == 6
+let t11 = DQ.head (DQ.tail (DQ.init tester3)) == 4
+let t8 = DQ.last (DQ.init (DQ.init tester2)) == 3
+let t9 = DQ.last (DQ.tail (DQ.init tester2)) == 5
+let t10 = DQ.head (DQ.tail (DQ.tail tester2)) == 5
+let t11 = DQ.head (DQ.tail (DQ.init tester2)) == 3
