@@ -24,9 +24,9 @@ struct
 
   let empty = ([],[])
 
-  let is_empty (q:'a queue) = match q with
-                  |([],[]) -> true
-                  | _ -> false
+  let is_empty (q:'a queue) : bool = match q with
+                                     |([],[]) -> true
+                                     | _ -> false
 
   let count (l:'a list) : int = 
     let rec counter (l:'a list) (number:int) = match l with 
@@ -57,47 +57,47 @@ struct
                                                    | (xs,ys) -> (xs,rev ys))
                                     | _ -> q
 
-  let cons (x:'a) (q:'a queue) = match q with
-                                 | (xs,ys) -> (x::xs,ys)
+  let cons (x:'a) (q:'a queue) : 'a queue = match q with
+                                            | (xs,ys) -> (x::xs,ys)
   
-  let head (q:'a queue) = match q with 
-                          | ([],[]) -> raise EMPTY
-                          | ([], y::[]) -> y
-                          | ([], ys) -> (match (fix q) with
-                                            | (x1::xs1,ys1) -> x1
-                                            | _ -> raise FIXFAILURE)
-                          | (x::xs,_) -> x
+  let head (q:'a queue) : 'a = match q with 
+                               | ([],[]) -> raise EMPTY
+                               | ([], y::[]) -> y
+                               | ([], ys) -> (match (fix q) with
+                                              | (x1::xs1,ys1) -> x1
+                                              | _ -> raise FIXFAILURE)
+                               | (x::xs,_) -> x
 
 
-  let tail (q:'a queue) = match q with
-                          | ([],[]) -> raise EMPTY
-                          | ([],y::[]) -> ([],[])
-                          | ([],ys) -> (match (fix q) with
-                                        | (x1::xs1,ys1) -> (xs1,ys1)
-                                        | _ -> raise FIXFAILURE)
-                          | (x::xs,ys) -> (xs,ys)
+  let tail (q:'a queue) : 'a queue = match q with
+                                     | ([],[]) -> raise EMPTY
+                                     | ([],y::[]) -> ([],[])
+                                     | ([],ys) -> (match (fix q) with
+                                                   | (x1::xs1,ys1) -> (xs1,ys1)
+                                                   | _ -> raise FIXFAILURE)
+                                     | (x::xs,ys) -> (xs,ys)
 
                                       
 
-  let snoc (q:'a queue) (x:'a) = match q with
-                                 | (xs,ys) -> (xs,x::ys)
+  let snoc (q:'a queue) (x:'a) : 'a queue = match q with
+                                            | (xs,ys) -> (xs,x::ys)
 
-  let last (q:'a queue) = match q with
-                          | ([],[]) -> raise EMPTY
-                          | (x::[],[]) -> x
-                          | (xs,[]) -> (match (fix q) with
-                                        | (xs1,y1::ys1) -> y1
-                                        | _ -> raise FIXFAILURE)
-                          | (_,y::ys) -> y
+  let last (q:'a queue) : 'a = match q with
+                               | ([],[]) -> raise EMPTY
+                               | (x::[],[]) -> x
+                               | (xs,[]) -> (match (fix q) with
+                                             | (xs1,y1::ys1) -> y1
+                                             | _ -> raise FIXFAILURE)
+                               | (_,y::ys) -> y
 
 
-  let init (q:'a queue) = match q with
-                          | ([],[]) -> raise EMPTY
-                          | (x::[],[]) -> ([],[])
-                          | (xs,[]) -> (match (fix q) with
-                                        |(xs1,y1::ys1) -> (xs1,ys1)
-                                        | _ -> raise FIXFAILURE)
-                          | (xs,y::ys) -> (xs,ys)
+  let init (q:'a queue) : 'a queue = match q with
+                                     | ([],[]) -> raise EMPTY
+                                     | (x::[],[]) -> ([],[])
+                                     | (xs,[]) -> (match (fix q) with
+                                                   |(xs1,y1::ys1) -> (xs1,ys1)
+                                                   | _ -> raise FIXFAILURE)
+                                     | (xs,y::ys) -> (xs,ys)
 end
 
 module DQ = DequeImp

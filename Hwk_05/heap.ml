@@ -40,54 +40,53 @@ struct
 
 	exception EMPTY
 
+	let rank (h:heap) : int = match h with
+							  | E -> 0
+							  | T (x,_,_,_) -> x
 
-	let rank (h:heap) = match h with
-						| E -> 0
-						| T (x,_,_,_) -> x
-
-	let makeT (x:Elem.t) (a:heap) (b:heap) = if rank a >= rank b then T((rank b + 1), x, a, b)
-											                     else T((rank a + 1), x, a, b)
-
+	let makeT (x:Elem.t) (a:heap) (b:heap) : heap = if rank a >= rank b then T((rank b + 1), x, a, b)
+											                     		else T((rank a + 1), x, a, b)
 	let empty = E
-	let isEmpty (h:heap) = h = empty
 
-	let rec merge (h1:heap) (h2:heap) = match h1, h2 with
-					 | h, E -> h
-					 | E, h -> h
-					 | T (_, x, a1, b1), T (_, y, a2, b2) -> if Elem.leq x y then makeT x a1 (merge b1 h2)
-					                                                         else makeT y a2 (merge h1 b2)
+	let isEmpty (h:heap) : bool = h = empty
+
+	let rec merge (h1:heap) (h2:heap) : heap = match h1, h2 with
+											   | h, E -> h
+											   | E, h -> h
+											   | T (_, x, a1, b1), T (_, y, a2, b2) -> if Elem.leq x y then makeT x a1 (merge b1 h2)
+											                                                           else makeT y a2 (merge h1 b2)
 	(* let insert (x:Elem.t) (h:heap) = merge (T (1, x, E, E)) h	 *)
 
-	let rec insert (x:Elem.t) (h:heap) = match h with
-									| E -> T (1, x, E, E) 
-	                       			| T(_, y, a, b) -> if Elem.leq x y then makeT x E h
-	                       											   else makeT y a (insert x b)
+	let rec insert (x:Elem.t) (h:heap) : heap = match h with
+												| E -> T (1, x, E, E) 
+				                       			| T(_, y, a, b) -> if Elem.leq x y then makeT x E h
+				                       											   else makeT y a (insert x b)
 
-	let findMin (h:heap) = match h with
-						   | E -> raise EMPTY
-	                       | T(_, x, a, b) -> x
+	let findMin (h:heap) : elem = match h with
+							      | E -> raise EMPTY
+		                          | T(_, x, a, b) -> x
 
-	let deleteMin (h:heap) = match h with
-						   | E -> raise EMPTY
-	                       | T(_, x, a, b) -> merge a b
+	let deleteMin (h:heap) : heap = match h with
+								    | E -> raise EMPTY
+			                        | T(_, x, a, b) -> merge a b
 
 	
 
-	let rec convert2Heap (l:Elem.t list) = match l with
-							| [] -> []
-							| x::xs -> (T (1, x, E, E)) :: convert2Heap xs
+	let rec convert2Heap (l:Elem.t list) : heap list = match l with
+													   | [] -> []
+													   | x::xs -> (T (1, x, E, E)) :: convert2Heap xs
 
-	let rec comboMagic (l:heap list) = match l with
-										| [] -> []
-										| x::[] -> x::[]
-										| x1::x2::xs -> merge x1 x2 :: comboMagic xs
+	let rec comboMagic (l:heap list) : heap list = match l with
+												   | [] -> []
+												   | x::[] -> x::[]
+												   | x1::x2::xs -> merge x1 x2 :: comboMagic xs
 
-	let rec looper (l:heap list) = match l with
-								   | [] -> E 
-								   | x::[] -> x
-								   | ls -> looper(comboMagic(ls))
+	let rec looper (l:heap list) : heap = match l with
+									      | [] -> E 
+									      | x::[] -> x
+									      | ls -> looper(comboMagic(ls))
 
-	let fromList (l:Elem.t list) = looper (convert2Heap l)
+	let fromList (l:Elem.t list) : heap = looper (convert2Heap l)
 
 	(* fromList will take convert2Heap time + looper time
 	convert2Heap takes O(n) time as it is just making one run through the list turning it from a list of ints to a list of heaps
@@ -96,7 +95,6 @@ struct
 	comboMagic where the merging happens likewise runs in log(n) passes as it too will run the depth of the tree.
 	When it is merging, it will merge single heaps with rank 1 the first run. rank 2 the second run and 
 	so on until either you are merge two equal things of n/2 or in the extreme case merge rank n-1 with rank 1.
-	but it will keep com
 	so i think that this would come out to be O(n) at the end.   *)
 
 end
