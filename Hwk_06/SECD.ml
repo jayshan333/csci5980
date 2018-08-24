@@ -10,6 +10,8 @@ type value
   | Mulv
   | EqIntv
   | Ifv
+  | Consv
+  | Nilv
 and expr
   = Var of string
   | App of expr * expr
@@ -66,6 +68,9 @@ let rec lookup (str:string) (env:env) : value =
 	match env with
 	| (x,IntLit xs)::rest -> if str = x then Int xs else lookup str rest
 	| _ -> raise (UndeclaredName str)
+
+let makeList (l:value) (r:value list) : value list =
+  l :: r
 (* 
 let reverse l =
   let rec reverse_h l l2 =
@@ -99,9 +104,8 @@ let rec go (st:state) : value =
   |(s,e, (EqInt (l,r))::rest,d) -> go (s,e,(r::l::EqInte::Apply::rest),d)
   |(s,e, True::rest,d) -> go ((Bool true)::s,e,rest,d)
   |(s,e, False::rest,d) -> go ((Bool false)::s,e,rest,d)
-  |(s,e, (Cons (l,r))::rest,d) -> go ()
+  |(s,e, (Cons (l,r))::rest,d) -> go (s,e, (r::l::Conse::Apply::rest),d)
   |(s,e, Nil::rest,d) -> go (s,e,Nile::Apply::rest,d)
-  |(s,e, Nil::rest,d) -> go (s,e,rest,d)
   |(s,e, If(ex)::rest,d) -> go (s,e,ex::Ife::Apply::rest,d)
 
   |(s,e,Adde::rest,d) -> go (Addv::s,e,rest,d)
@@ -117,8 +121,8 @@ let rec go (st:state) : value =
   |(Mulv::Int l::Int r::srest,e,Apply::crest,d) -> go (Int (l*r)::srest,e,crest,d)
   |(EqIntv::Int l::Int r::srest,e,Apply::crest,d) -> go (Bool (l=r)::srest,e,crest,d)
   |(Closure (ce, str, x):: v:: srest, e, Apply::crest, d) -> go ([],(addEnv str v ce),x::[],(srest,e,crest)::d)
-  |(Consv::l::srest, e, Apply::crest,d) -> go ([l]@srest,e,crest,d)
-(*   |(Nilv::srest, e, Apply::crest, d) -> go ([[]],e,crest,d) *)
+  |(Consv::l::List r::srest, e, Apply::crest,d) -> go ((List (makeList l r))::srest,e,crest,d)
+  |(Nilv::srest, e, Apply::crest, d) -> go ((List [])::srest,e,crest,d)
   |(Ifv::Bool true::thener::elser::srest, e, Apply::crest,d) -> go (thener::srest,e,crest,d)
   |(Ifv::Bool false::thener::elser::srest, e, Apply::crest,d) -> go (elser::srest,e,crest,d)
 
@@ -155,18 +159,21 @@ let v6 = eval e6
 let e7 = Add (IntLit 10, Mul (IntLit 4, Sub (IntLit 5, IntLit 2)))
 let v7 = eval e7
 
-(* "<e7> :: <e6> :: []" *)
-(* let e8 = Cons (e7, Cons (e6, Nil)) *)
-(* let e8 = Cons(IntLit 10, Cons(IntLit 12, Nil))
+(* (* 3 :: [] *)
+let e8 = Cons(IntLit 3, Nil)
 let v8 = eval e8 *)
 
-(* (* "if true then 1 else 2" *)
+(* "<e7> :: <e6> :: []" *)
+let e8 = Cons (e7, Cons (e6, Nil))
+let v8 = eval e8
+
+(* "if true then 1 else 2" *)
 let e9 = App (If (True), Cons (IntLit 1, Cons (IntLit 2, Nil)))
 let v9 = eval e9
 
-"if false then 1 else 2"
+(* "if false then 1 else 2" *)
 let e10 = App (If (False), Cons (IntLit 1, Cons (IntLit 2, Nil)))
-let v10 = eval e10 *)
+let v10 = eval e10
 
 (* "1 = 2" *)
 let e11 = EqInt (IntLit 1, IntLit 2)
@@ -187,8 +194,8 @@ let rec whereTranslate (e:expr) =
 
 let translate (e:expr) : expr =   
   match e with
-  | IfTE(ifer,thener,elser) -> App (App (If (True), Cons ((Abs ("_", thener))), Cons ((Abs ("_", elser))), Nil)), "Dummy")
-  | Where(expr,Decl(str,strlist,dexpr)) -> whereTranslate (Where(expr,Decl(str,reverse(strlist),dexpr)))
+  (* | IfTE(ifer,thener,elser) -> App (App (If (True), Cons ((Abs ("_", thener))), Cons ((Abs ("_", elser))), Nil)), "Dummy") *)
+  (* | Where(expr,Decl(str,strlist,dexpr)) -> whereTranslate (Where(expr,Decl(str,reverse(strlist),dexpr))) *)
   (* | WhereRec(expr,Decl(str,strlist,dexpr)) ->  *)
   | _ -> raise (InvalidSyntax ("translate",e))
 

@@ -44,7 +44,6 @@ struct
 													| E -> (false, false, [])
 													| T (c, a, y, b) -> if Element.lt x y then member2 x a (y::l)
 																		else if Element.lt y x then member2 x b (y::l)
-																		(* else true *)
 																		else match c with
 																		| B -> (true, false, l)
 																		| R -> (true, true, l)
