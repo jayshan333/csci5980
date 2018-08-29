@@ -1,4 +1,5 @@
 (* Lists, translations needs work *)
+(* 'opam config env' utop -safe-string *)
 
 type value
   = Int of int
@@ -12,6 +13,7 @@ type value
   | Ifv
   | Consv
   | Nilv
+  | NullList
 and expr
   = Var of string
   | App of expr * expr
@@ -121,8 +123,10 @@ let rec go (st:state) : value =
   |(Mulv::Int l::Int r::srest,e,Apply::crest,d) -> go (Int (l*r)::srest,e,crest,d)
   |(EqIntv::Int l::Int r::srest,e,Apply::crest,d) -> go (Bool (l=r)::srest,e,crest,d)
   |(Closure (ce, str, x):: v:: srest, e, Apply::crest, d) -> go ([],(addEnv str v ce),x::[],(srest,e,crest)::d)
-  |(Consv::l::List r::srest, e, Apply::crest,d) -> go ((List (makeList l r))::srest,e,crest,d)
-  |(Nilv::srest, e, Apply::crest, d) -> go ((List [])::srest,e,crest,d)
+(*   |(Consv::l::List r::srest, e, Apply::crest,d) -> go ((List (makeList l r))::srest,e,crest,d)
+  |(Nilv::srest, e, Apply::crest, d) -> go ((List [])::srest,e,crest,d) *)
+  |(Consv::l::r::srest, e, Apply::crest,d) -> go (l::(List [r])::srest,e,crest,d)
+  |(Nilv::srest, e, Apply::crest, d) -> go (NullList::srest,e,crest,d)
   |(Ifv::Bool true::thener::elser::srest, e, Apply::crest,d) -> go (thener::srest,e,crest,d)
   |(Ifv::Bool false::thener::elser::srest, e, Apply::crest,d) -> go (elser::srest,e,crest,d)
 
@@ -159,17 +163,23 @@ let v6 = eval e6
 let e7 = Add (IntLit 10, Mul (IntLit 4, Sub (IntLit 5, IntLit 2)))
 let v7 = eval e7
 
-(* (* 3 :: [] *)
-let e8 = Cons(IntLit 3, Nil)
-let v8 = eval e8 *)
+(* 1 :: 2 :: [] *)
+let e8 = Cons (IntLit 1, Cons (IntLit 2, Nil))
+let v8 = eval e8
 
 (* "<e7> :: <e6> :: []" *)
-let e8 = Cons (e7, Cons (e6, Nil))
-let v8 = eval e8
+(* let e8 = Cons (e7, Cons (e6, Nil))
+let v8 = eval e8 *)
 
 (* "if true then 1 else 2" *)
 let e9 = App (If (True), Cons (IntLit 1, Cons (IntLit 2, Nil)))
 let v9 = eval e9
+
+(* let e9 = App (If (True), App (IntLit 1, IntLit 2))
+let v9 = eval e9
+
+let e10 = App (If (False), App (IntLit 1, IntLit 2))
+let v10 = eval e10 *)
 
 (* "if false then 1 else 2" *)
 let e10 = App (If (False), Cons (IntLit 1, Cons (IntLit 2, Nil)))
@@ -195,7 +205,7 @@ let rec whereTranslate (e:expr) =
 let translate (e:expr) : expr =   
   match e with
   (* | IfTE(ifer,thener,elser) -> App (App (If (True), Cons ((Abs ("_", thener))), Cons ((Abs ("_", elser))), Nil)), "Dummy") *)
-  (* | Where(expr,Decl(str,strlist,dexpr)) -> whereTranslate (Where(expr,Decl(str,reverse(strlist),dexpr))) *)
+  | Where(expr,Decl(str,strlist,dexpr)) -> whereTranslate (Where(expr,Decl(str,reverse(strlist),dexpr))) 
   (* | WhereRec(expr,Decl(str,strlist,dexpr)) ->  *)
   | _ -> raise (InvalidSyntax ("translate",e))
 
@@ -205,16 +215,16 @@ dummy string *)
 (* "if true then 1 else 2" \
   (* | IfTE(ifer,thener,elser) -> App(If(ifer),App (App (Abs ("x", thener), IntLit 3),elser)) *)
 *)
-let e12 = IfTE (True, IntLit 1, IntLit 2)
-let v12 = eval (translate e12)
+(*  let e12 = IfTE (True, IntLit 1, IntLit 2)
+let v12 = eval (translate e12) *)
 (* #trace go;; go ([], [], (translate e12)::[], []);;  *)
 
 (* "if false then 1 else 2" *)
 (* let e13 = IfTE (False, IntLit 1, IntLit 2)
 let v13 = eval (translate e13) *)
 
-let e13 = IfTE (False, Var "joker", IntLit 2)
-let v13 = eval (translate e13)
+(* let e13 = IfTE (False, Var "joker", IntLit 2)
+let v13 = eval (translate e13) *)
 (* #trace go;; go ([], [], (translate e13)::[], []);;  *)
 
 
@@ -245,3 +255,5 @@ let v16 = eval (translate e16)
 let e17 = WhereRec (App (Var "f", IntLit 4),
                     Decl ("f", ["n"], factBody))
 let v17 = eval (translate e17)
+
+(* Y\f.\n.if n=0 then 1 else nf(n-1) -> *)
