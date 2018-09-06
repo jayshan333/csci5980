@@ -63,7 +63,7 @@ struct
   									| T (a,y,b) -> if Element.lt e y then member e a
   												   else if Element.lt y e then member e b
   												   else true	 *)
-(* g is my guess *)
+  (* g is my guess *)
   let rec member2 (e:elem) (t:set) (g:elem) : bool = match t with
                             											   | E -> Element.eq e g
                             											   | T (a,y,b) -> if Element.leq e y then member2 e a y

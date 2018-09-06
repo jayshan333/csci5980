@@ -88,15 +88,6 @@ struct
 
 	let fromList (l:Elem.t list) : heap = looper (convert2Heap l)
 
-	(* fromList will take convert2Heap time + looper time
-	convert2Heap takes O(n) time as it is just making one run through the list turning it from a list of ints to a list of heaps
-	looper is going to runs in log(n) passes. This is because looper is going to run until the heap has been fully been put together
-	This means that it is going to run as many passes as the depth of the heap which is log(n).
-	comboMagic where the merging happens likewise runs in log(n) passes as it too will run the depth of the tree.
-	When it is merging, it will merge single heaps with rank 1 the first run. rank 2 the second run and 
-	so on until either you are merge two equal things of n/2 or in the extreme case merge rank n-1 with rank 1.
-	so i think that this would come out to be O(n) at the end.   *)
-
 end
 
 

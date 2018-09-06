@@ -1,10 +1,11 @@
-(* Lists, translations needs work *)
+(*Lists, translations needs work *)
 (* 'opam config env' utop -safe-string *)
 
 type value
   = Int of int
   | Bool of bool
   | List of value list
+  | Lister of value * value list
   | Closure of env * string * expr
   | Addv
   | Subv
@@ -123,9 +124,9 @@ let rec go (st:state) : value =
   |(Mulv::Int l::Int r::srest,e,Apply::crest,d) -> go (Int (l*r)::srest,e,crest,d)
   |(EqIntv::Int l::Int r::srest,e,Apply::crest,d) -> go (Bool (l=r)::srest,e,crest,d)
   |(Closure (ce, str, x):: v:: srest, e, Apply::crest, d) -> go ([],(addEnv str v ce),x::[],(srest,e,crest)::d)
-(*   |(Consv::l::List r::srest, e, Apply::crest,d) -> go ((List (makeList l r))::srest,e,crest,d)
-  |(Nilv::srest, e, Apply::crest, d) -> go ((List [])::srest,e,crest,d) *)
-  |(Consv::l::r::srest, e, Apply::crest,d) -> go (l::(List [r])::srest,e,crest,d)
+  (* |(Consv::l::List r::srest, e, Apply::crest,d) -> go ((List (makeList l r))::srest,e,crest,d) *)
+  (* |(Nilv::srest, e, Apply::crest, d) -> go ((List [])::srest,e,crest,d) *)
+  |(Consv::l::r::srest, e, Apply::crest,d) -> go (Lister (l,[r])::srest,e,crest,d)
   |(Nilv::srest, e, Apply::crest, d) -> go (NullList::srest,e,crest,d)
   |(Ifv::Bool true::thener::elser::srest, e, Apply::crest,d) -> go (thener::srest,e,crest,d)
   |(Ifv::Bool false::thener::elser::srest, e, Apply::crest,d) -> go (elser::srest,e,crest,d)
@@ -204,7 +205,8 @@ let rec whereTranslate (e:expr) =
 
 let translate (e:expr) : expr =   
   match e with
-  (* | IfTE(ifer,thener,elser) -> App (App (If (True), Cons ((Abs ("_", thener))), Cons ((Abs ("_", elser))), Nil)), "Dummy") *)
+  (* | IfTE(ifer,thener,elser) -> App (App (If (ifer), Cons ((Abs ("_", thener))), Cons ((Abs ("_", elser))), Nil)), "Dummy") *)
+  | IfTE(ifer,thener,elser) -> App (If(ifer), (App (thener,elser))
   | Where(expr,Decl(str,strlist,dexpr)) -> whereTranslate (Where(expr,Decl(str,reverse(strlist),dexpr))) 
   (* | WhereRec(expr,Decl(str,strlist,dexpr)) ->  *)
   | _ -> raise (InvalidSyntax ("translate",e))
