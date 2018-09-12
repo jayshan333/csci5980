@@ -76,15 +76,15 @@ struct
 													   | [] -> []
 													   | x::xs -> (T (1, x, E, E)) :: convert2Heap xs
 
-	let rec comboMagic (l:heap list) : heap list = match l with
+	let rec merger (l:heap list) : heap list = match l with
 												   | [] -> []
 												   | x::[] -> x::[]
-												   | x1::x2::xs -> merge x1 x2 :: comboMagic xs
+												   | x1::x2::xs -> merge x1 x2 :: merger xs
 
 	let rec looper (l:heap list) : heap = match l with
 									      | [] -> E 
 									      | x::[] -> x
-									      | ls -> looper(comboMagic(ls))
+									      | ls -> looper(merger(ls))
 
 	let fromList (l:Elem.t list) : heap = looper (convert2Heap l)
 
