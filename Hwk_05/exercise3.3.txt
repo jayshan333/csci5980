@@ -2,7 +2,7 @@ fromList time = convert2Heap time + looper time
 
 convert2Heap = O(n) because it is going through the list of size n once
 
-looper time = O(log(n))+ merge time because looper and merger are going to merge the list of heaps until there is one heap left. The amount of times we call these functions is proportional to the depth of the heap. As we know the depth of any of these heap is O(log(n)) which likewize means that looper and merger are going to take O(log(n))
+looper and merger time = O(log(n))+ merge time because looper and merger are going to merge the list of heaps until there is one heap left. The amount of times we call these functions is proportional to the depth of the heap. As we know the depth of any of these heap is O(log(n)) which likewize means that looper and merger are going to take O(log(n))
 
 merge time = O(log(n))
 
